@@ -30,7 +30,6 @@ export default function Home() {
 
         <div className="mt-16 grid grid-cols-1 gap-8 sm:grid-cols-2 lg:grid-cols-3">
           <div className="border border-border rounded-lg bg-card p-6">
-            <div className="text-2xl mb-3">📅</div>
             <h3 className="text-lg font-semibold text-foreground">Meeting Scheduling</h3>
             <p className="mt-2 text-sm text-muted">
               Create and manage sacrament meeting entries for each Sunday with different meeting types.
@@ -38,7 +37,6 @@ export default function Home() {
           </div>
 
           <div className="border border-border rounded-lg bg-card p-6">
-            <div className="text-2xl mb-3">📝</div>
             <h3 className="text-lg font-semibold text-foreground">Agenda Management</h3>
             <p className="mt-2 text-sm text-muted">
               Track announcements, prayers, hymns, speakers, musical numbers, and ward business.
@@ -46,7 +44,6 @@ export default function Home() {
           </div>
 
           <div className="border border-border rounded-lg bg-card p-6">
-            <div className="text-2xl mb-3">🖨️</div>
             <h3 className="text-lg font-semibold text-foreground">Print Programs</h3>
             <p className="mt-2 text-sm text-muted">
               View and print meeting programs for current and past weeks.

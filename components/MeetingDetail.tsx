@@ -94,7 +94,7 @@ export default function MeetingDetail({ meeting }: { meeting: SacramentMeeting }
           {meeting.speakers.map((speaker, index) => (
             <li key={index} className="text-muted">
               {speaker.type === 'musical-number' ? (
-                <span className="italic">🎵 {speaker.name}</span>
+                <span className="italic">{speaker.name} (Musical Number)</span>
               ) : (
                 speaker.name
               )}
