@@ -8,7 +8,7 @@ export default async function MeetingPage({
 }) {
   const { id } = await params;
   const meetingId = parseInt(id, 10);
-  const meeting = getMeetingById(meetingId);
+  const meeting = await getMeetingById(meetingId);
 
   if (!meeting) {
     return (
