@@ -1,5 +1,5 @@
 import { redirect } from 'next/navigation';
-import { getMeetings } from '@/lib/meetings-db';
+import { getMeetingByDate } from '@/lib/meetings-db';
 
 export default async function CurrentMeetingPage() {
   const today = new Date();
@@ -12,12 +12,11 @@ export default async function CurrentMeetingPage() {
   const day = String(sunday.getDate()).padStart(2, '0');
   const sundayDate = `${year}-${month}-${day}`;
 
-  // Get all meetings and filter by date
-  const allMeetings = await getMeetings('', 1);
-  const meetings = allMeetings.filter(m => m.date === sundayDate);
+  // Get meeting by date directly
+  const meeting = await getMeetingByDate(sundayDate);
 
-  if (meetings.length > 0) {
-    redirect(`/meetings/${meetings[0].id}`);
+  if (meeting) {
+    redirect(`/meetings/${meeting.id}`);
   } else {
     redirect('/meetings');
   }

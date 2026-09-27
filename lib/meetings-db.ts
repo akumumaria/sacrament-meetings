@@ -191,3 +191,28 @@ export async function deleteMeeting(id: number): Promise<boolean> {
     throw new Error('Failed to delete meeting. Please try again.');
   }
 }
+
+export async function getMeetingByDate(date: string): Promise<SacramentMeeting | null> {
+  try {
+    const rows = await sql`
+      SELECT
+        id,
+        to_char(date, 'YYYY-MM-DD') AS "date",
+        meeting_type                AS "meetingType",
+        presiding, conducting, announcements,
+        opening_hymn                AS "openingHymn",
+        opening_prayer              AS "openingPrayer",
+        ward_business               AS "wardBusiness",
+        stake_business              AS "stakeBusiness",
+        sacrament_hymn              AS "sacramentHymn",
+        speakers,
+        closing_hymn                AS "closingHymn",
+        closing_prayer              AS "closingPrayer"
+      FROM meetings WHERE date = ${date}
+    `;
+    return (rows[0] as unknown as SacramentMeeting) ?? null;
+  } catch (error) {
+    console.error('Error fetching meeting by date:', error);
+    throw new Error('Failed to fetch meeting. Please try again.');
+  }
+}
