@@ -10,89 +10,184 @@ export async function getMeetings(
   currentPage: number = 1,
   meetingType: string = ''
 ): Promise<SacramentMeeting[]> {
-  const searchTerm = `%${query}%`;
-  const offset = (currentPage - 1) * ITEMS_PER_PAGE;
+  try {
+    const searchTerm = `%${query}%`;
+    const offset = (currentPage - 1) * ITEMS_PER_PAGE;
 
-  const rows = await sql`
-    SELECT
-      id,
-      to_char(date, 'YYYY-MM-DD') AS "date",
-      meeting_type                AS "meetingType",
-      presiding, conducting, announcements,
-      opening_hymn                AS "openingHymn",
-      opening_prayer              AS "openingPrayer",
-      ward_business               AS "wardBusiness",
-      stake_business              AS "stakeBusiness",
-      sacrament_hymn              AS "sacramentHymn",
-      speakers,
-      closing_hymn                AS "closingHymn",
-      closing_prayer              AS "closingPrayer"
-    FROM meetings
-    WHERE
-      (presiding     ILIKE ${searchTerm}
-      OR conducting ILIKE ${searchTerm}
-      OR meeting_type ILIKE ${searchTerm}
-      OR speakers::text ILIKE ${searchTerm})
-      ${meetingType ? sql`AND meeting_type = ${meetingType}` : sql``}
-    ORDER BY date DESC
-    LIMIT ${ITEMS_PER_PAGE} OFFSET ${offset}
-  `;
-  return rows as unknown as SacramentMeeting[];
+    const rows = await sql`
+      SELECT
+        id,
+        to_char(date, 'YYYY-MM-DD') AS "date",
+        meeting_type                AS "meetingType",
+        presiding, conducting, announcements,
+        opening_hymn                AS "openingHymn",
+        opening_prayer              AS "openingPrayer",
+        ward_business               AS "wardBusiness",
+        stake_business              AS "stakeBusiness",
+        sacrament_hymn              AS "sacramentHymn",
+        speakers,
+        closing_hymn                AS "closingHymn",
+        closing_prayer              AS "closingPrayer"
+      FROM meetings
+      WHERE
+        (presiding     ILIKE ${searchTerm}
+        OR conducting ILIKE ${searchTerm}
+        OR meeting_type ILIKE ${searchTerm}
+        OR speakers::text ILIKE ${searchTerm})
+        ${meetingType ? sql`AND meeting_type = ${meetingType}` : sql``}
+      ORDER BY date DESC
+      LIMIT ${ITEMS_PER_PAGE} OFFSET ${offset}
+    `;
+    return rows as unknown as SacramentMeeting[];
+  } catch (error) {
+    console.error('Error fetching meetings:', error);
+    throw new Error('Failed to fetch meetings. Please try again.');
+  }
 }
 
 export async function getMeetingsTotalPages(
   query: string = '',
   meetingType: string = ''
 ): Promise<number> {
-  const searchTerm = `%${query}%`;
-  const rows = await sql`
-    SELECT COUNT(*) FROM meetings
-    WHERE
-      (presiding     ILIKE ${searchTerm}
-      OR conducting ILIKE ${searchTerm}
-      OR meeting_type ILIKE ${searchTerm}
-      OR speakers::text ILIKE ${searchTerm})
-      ${meetingType ? sql`AND meeting_type = ${meetingType}` : sql``}
-  `;
-  return Math.ceil(Number(rows[0].count) / ITEMS_PER_PAGE);
+  try {
+    const searchTerm = `%${query}%`;
+    const rows = await sql`
+      SELECT COUNT(*) FROM meetings
+      WHERE
+        (presiding     ILIKE ${searchTerm}
+        OR conducting ILIKE ${searchTerm}
+        OR meeting_type ILIKE ${searchTerm}
+        OR speakers::text ILIKE ${searchTerm})
+        ${meetingType ? sql`AND meeting_type = ${meetingType}` : sql``}
+    `;
+    return Math.ceil(Number(rows[0].count) / ITEMS_PER_PAGE);
+  } catch (error) {
+    console.error('Error fetching total pages:', error);
+    throw new Error('Failed to fetch total pages. Please try again.');
+  }
 }
 
 export async function getMeetingById(
   id: number
 ): Promise<SacramentMeeting | null> {
-  const rows = await sql`
-    SELECT
-      id,
-      to_char(date, 'YYYY-MM-DD') AS "date",
-      meeting_type                AS "meetingType",
-      presiding, conducting, announcements,
-      opening_hymn                AS "openingHymn",
-      opening_prayer              AS "openingPrayer",
-      ward_business               AS "wardBusiness",
-      stake_business              AS "stakeBusiness",
-      sacrament_hymn              AS "sacramentHymn",
-      speakers,
-      closing_hymn                AS "closingHymn",
-      closing_prayer              AS "closingPrayer"
-    FROM meetings WHERE id = ${id}
-  `;
-  return (rows[0] as unknown as SacramentMeeting) ?? null;
+  try {
+    const rows = await sql`
+      SELECT
+        id,
+        to_char(date, 'YYYY-MM-DD') AS "date",
+        meeting_type                AS "meetingType",
+        presiding, conducting, announcements,
+        opening_hymn                AS "openingHymn",
+        opening_prayer              AS "openingPrayer",
+        ward_business               AS "wardBusiness",
+        stake_business              AS "stakeBusiness",
+        sacrament_hymn              AS "sacramentHymn",
+        speakers,
+        closing_hymn                AS "closingHymn",
+        closing_prayer              AS "closingPrayer"
+      FROM meetings WHERE id = ${id}
+    `;
+    return (rows[0] as unknown as SacramentMeeting) ?? null;
+  } catch (error) {
+    console.error('Error fetching meeting by ID:', error);
+    throw new Error('Failed to fetch meeting. Please try again.');
+  }
 }
 
-// Mutation stubs — will be wired to the database in Week 04
 export async function addMeeting(
   data: Omit<SacramentMeeting, 'id'>
 ): Promise<SacramentMeeting> {
-  throw new Error('addMeeting: database implementation coming in Week 04');
+  try {
+    const rows = await sql`
+      INSERT INTO meetings (
+        date, meeting_type, presiding, conducting, announcements,
+        opening_hymn, opening_prayer, ward_business, stake_business,
+        sacrament_hymn, speakers, closing_hymn, closing_prayer
+      ) VALUES (
+        ${data.date},
+        ${data.meetingType},
+        ${data.presiding},
+        ${data.conducting},
+        ${data.announcements || []},
+        ${JSON.stringify(data.openingHymn)},
+        ${data.openingPrayer},
+        ${JSON.stringify(data.wardBusiness)},
+        ${data.stakeBusiness},
+        ${JSON.stringify(data.sacramentHymn)},
+        ${JSON.stringify(data.speakers)},
+        ${JSON.stringify(data.closingHymn)},
+        ${data.closingPrayer}
+      )
+      RETURNING
+        id,
+        to_char(date, 'YYYY-MM-DD') AS "date",
+        meeting_type                AS "meetingType",
+        presiding, conducting, announcements,
+        opening_hymn                AS "openingHymn",
+        opening_prayer              AS "openingPrayer",
+        ward_business               AS "wardBusiness",
+        stake_business              AS "stakeBusiness",
+        sacrament_hymn              AS "sacramentHymn",
+        speakers,
+        closing_hymn                AS "closingHymn",
+        closing_prayer              AS "closingPrayer"
+    `;
+    return rows[0] as unknown as SacramentMeeting;
+  } catch (error) {
+    console.error('Error adding meeting:', error);
+    throw new Error('Failed to add meeting. Please try again.');
+  }
 }
 
 export async function updateMeeting(
   id: number,
   updates: Partial<SacramentMeeting>
 ): Promise<SacramentMeeting | null> {
-  throw new Error('updateMeeting: database implementation coming in Week 04');
+  try {
+    const rows = await sql`
+      UPDATE meetings
+      SET
+        date = COALESCE(${updates.date}, date),
+        meeting_type = COALESCE(${updates.meetingType}, meeting_type),
+        presiding = COALESCE(${updates.presiding}, presiding),
+        conducting = COALESCE(${updates.conducting}, conducting),
+        announcements = COALESCE(${updates.announcements}, announcements),
+        opening_hymn = COALESCE(${updates.openingHymn ? JSON.stringify(updates.openingHymn) : null}, opening_hymn),
+        opening_prayer = COALESCE(${updates.openingPrayer}, opening_prayer),
+        ward_business = COALESCE(${updates.wardBusiness ? JSON.stringify(updates.wardBusiness) : null}, ward_business),
+        stake_business = COALESCE(${updates.stakeBusiness}, stake_business),
+        sacrament_hymn = COALESCE(${updates.sacramentHymn ? JSON.stringify(updates.sacramentHymn) : null}, sacrament_hymn),
+        speakers = COALESCE(${updates.speakers ? JSON.stringify(updates.speakers) : null}, speakers),
+        closing_hymn = COALESCE(${updates.closingHymn ? JSON.stringify(updates.closingHymn) : null}, closing_hymn),
+        closing_prayer = COALESCE(${updates.closingPrayer}, closing_prayer)
+      WHERE id = ${id}
+      RETURNING
+        id,
+        to_char(date, 'YYYY-MM-DD') AS "date",
+        meeting_type                AS "meetingType",
+        presiding, conducting, announcements,
+        opening_hymn                AS "openingHymn",
+        opening_prayer              AS "openingPrayer",
+        ward_business               AS "wardBusiness",
+        stake_business              AS "stakeBusiness",
+        sacrament_hymn              AS "sacramentHymn",
+        speakers,
+        closing_hymn                AS "closingHymn",
+        closing_prayer              AS "closingPrayer"
+    `;
+    return (rows[0] as unknown as SacramentMeeting) ?? null;
+  } catch (error) {
+    console.error('Error updating meeting:', error);
+    throw new Error('Failed to update meeting. Please try again.');
+  }
 }
 
 export async function deleteMeeting(id: number): Promise<boolean> {
-  throw new Error('deleteMeeting: database implementation coming in Week 04');
+  try {
+    const rows = await sql`DELETE FROM meetings WHERE id = ${id} RETURNING id`;
+    return rows.length > 0;
+  } catch (error) {
+    console.error('Error deleting meeting:', error);
+    throw new Error('Failed to delete meeting. Please try again.');
+  }
 }

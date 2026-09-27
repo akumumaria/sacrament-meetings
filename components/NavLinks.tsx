@@ -9,6 +9,7 @@ export default function NavLinks() {
   const links = [
     { href: '/', label: 'Home' },
     { href: '/meetings', label: 'Meetings' },
+    { href: '/meetings/new', label: 'Create Meeting' },
   ];
 
   return (
