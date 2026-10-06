@@ -3,7 +3,10 @@
 import { z } from 'zod';
 import { revalidatePath } from 'next/cache';
 import { redirect } from 'next/navigation';
-import { addMeeting, updateMeeting, deleteMeeting } from './meetings-db';
+import { addMeeting, updateMeeting, deleteMeeting, getUserByEmail, createUser } from './meetings-db';
+import { signIn, signOut } from '@/auth';
+import { AuthError } from 'next-auth';
+import bcrypt from 'bcryptjs';
 
 export type State = {
   errors?: {
@@ -161,4 +164,71 @@ export async function deleteMeetingAction(id: number) {
 
   revalidatePath('/meetings');
   redirect('/meetings');
+}
+
+export async function authenticate(
+  prevState: string | undefined,
+  formData: FormData,
+) {
+  try {
+    await signIn('credentials', formData);
+  } catch (error) {
+    if (error instanceof AuthError) {
+      switch (error.type) {
+        case 'CredentialsSignin':
+          return 'Invalid email or password.';
+        default:
+          return 'Something went wrong.';
+      }
+    }
+    throw error;
+  }
+}
+
+export async function signOutAction() {
+  await signOut({ redirectTo: '/' });
+}
+
+export async function register(
+  prevState: string | undefined,
+  formData: FormData,
+) {
+  const name = formData.get('name') as string;
+  const email = formData.get('email') as string;
+  const password = formData.get('password') as string;
+  const confirmPassword = formData.get('confirmPassword') as string;
+
+  // Validate passwords match
+  if (password !== confirmPassword) {
+    return 'Passwords do not match.';
+  }
+
+  // Validate password length
+  if (password.length < 6) {
+    return 'Password must be at least 6 characters.';
+  }
+
+  // Check if user already exists
+  const existingUser = await getUserByEmail(email);
+  if (existingUser) {
+    return 'An account with this email already exists.';
+  }
+
+  // Hash password
+  const passwordHash = await bcrypt.hash(password, 10);
+
+  // Create user
+  try {
+    await createUser({
+      email,
+      name,
+      passwordHash,
+    });
+  } catch (error) {
+    console.error('Error creating user:', error);
+    return 'Failed to create account. Please try again.';
+  }
+
+  // Redirect to login page
+  redirect('/login');
 }

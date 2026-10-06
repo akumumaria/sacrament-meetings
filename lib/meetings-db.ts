@@ -1,5 +1,5 @@
 import { neon } from '@neondatabase/serverless';
-import type { SacramentMeeting } from './types';
+import type { SacramentMeeting, User } from './types';
 
 const sql = neon(process.env.DATABASE_URL!);
 
@@ -214,5 +214,32 @@ export async function getMeetingByDate(date: string): Promise<SacramentMeeting |
   } catch (error) {
     console.error('Error fetching meeting by date:', error);
     throw new Error('Failed to fetch meeting. Please try again.');
+  }
+}
+
+export async function getUserByEmail(email: string): Promise<User | null> {
+  try {
+    const rows = await sql`
+      SELECT id::text, email, name, password_hash AS "passwordHash"
+      FROM users WHERE email = ${email}
+    `;
+    return (rows[0] as unknown as User) ?? null;
+  } catch (error) {
+    console.error('Error fetching user by email:', error);
+    throw new Error('Failed to fetch user. Please try again.');
+  }
+}
+
+export async function createUser(data: Omit<User, 'id'>): Promise<User> {
+  try {
+    const rows = await sql`
+      INSERT INTO users (email, name, password_hash)
+      VALUES (${data.email}, ${data.name}, ${data.passwordHash})
+      RETURNING id::text, email, name, password_hash AS "passwordHash"
+    `;
+    return rows[0] as unknown as User;
+  } catch (error) {
+    console.error('Error creating user:', error);
+    throw new Error('Failed to create user. Please try again.');
   }
 }

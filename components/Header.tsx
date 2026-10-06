@@ -1,12 +1,18 @@
 'use client';
 
+import { useSession } from 'next-auth/react';
+import { SignOutButton } from './SignOutButton';
+
 export default function Header() {
+  const { data: session, status } = useSession();
   const today = new Date().toLocaleDateString('en-US', {
     weekday: 'long',
     year: 'numeric',
     month: 'long',
     day: 'numeric'
   });
+
+  console.log('Session status:', status, 'Session:', session);
 
   return (
     <header className="border-b border-border bg-card">
@@ -16,8 +22,11 @@ export default function Header() {
             <h1 className="text-2xl font-bold text-foreground">Oak Creek Ward</h1>
             <p className="text-sm text-muted mt-1">Sacrament Meeting Planner</p>
           </div>
-          <div className="text-sm text-muted">
-            {today}
+          <div className="flex items-center gap-4">
+            <div className="text-sm text-muted">
+              {today}
+            </div>
+            {status === 'authenticated' && <SignOutButton />}
           </div>
         </div>
       </div>

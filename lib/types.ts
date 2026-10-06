@@ -5,6 +5,13 @@ export type MeetingType =
   | 'general'
   | 'special';
 
+export interface User {
+  id: string;
+  email: string;
+  name: string;
+  passwordHash: string;
+}
+
 export interface Hymn {
   number: number;
   title: string;
